@@ -15,7 +15,7 @@ to plot these links, as well as print some statistics of the resulting graph.
 2. Generate authentication tokens by following the instructions [here](https://dev.twitter.com/docs/auth/tokens-devtwittercom).
 3. Add your tokens to the key/token variables below. (API Key == Consumer Key)
 4. Be sure you've installed the Python modules
-[networkx](http://networkx.github.io/) and
+    [networkx](http://networkx.github.io/) and
 [TwitterAPI](https://github.com/geduldig/TwitterAPI). Assuming you've already
 installed [pip](http://pip.readthedocs.org/en/latest/installing.html), you can
 do this with `pip install networkx TwitterAPI`.
@@ -35,12 +35,15 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import sys
 import time
+import json
+import configparser
 from TwitterAPI import TwitterAPI
 
-consumer_key = 'fixme'
-consumer_secret = 'fixme'
-access_token = 'fixme'
-access_token_secret = 'fixme'
+
+consumer_key = ''
+consumer_secret = ''
+access_token = ''
+access_token_secret = ''
 
 
 # This method is done for you. Make sure to put your credentials in the file twitter.cfg.
@@ -48,8 +51,16 @@ def get_twitter():
     """ Construct an instance of TwitterAPI using the tokens you entered above.
     Returns:
       An instance of TwitterAPI.
-    """
-    return TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
+    ""
+    TwitterAPI=Twitter(
+        auth=OAuth(access_token, access_token_secret, consumer_key,consumer_secret )
+        )"""
+    config = configparser.ConfigParser()
+    config.read("twitter.cfg")
+    twitterapi = TwitterAPI( config.get('twitter', 'consumer_key'),  config.get('twitter', 'consumer_secret'), 
+                          config.get('twitter', 'access_token'),  config.get('twitter', 'access_token_secret')) 
+
+    return twitterapi;
 
 
 def read_screen_names(filename):
@@ -66,6 +77,14 @@ def read_screen_names(filename):
     >>> read_screen_names('candidates.txt')
     ['DrJillStein', 'GovGaryJohnson', 'HillaryClinton', 'realDonaldTrump']
     """
+    file = open(filename,'r')
+    candidate_list=[]
+    for index in file:
+         temp=index.split()
+         cand= (temp[0])
+         candidate_list.append(cand)
+    file.close()
+    return (candidate_list)
     ###TODO
     pass
 
@@ -112,7 +131,11 @@ def get_users(twitter, screen_names):
     >>> [u['id'] for u in users]
     [6253282, 783214]
     """
+  
+    request= twitter.request('users/lookup',{'screen_name':screen_names})
+    dicts=request
     ###TODO
+    return dicts
     pass
 
 
@@ -137,11 +160,19 @@ def get_friends(twitter, screen_name):
     >>> get_friends(twitter, 'aronwc')[:5]
     [695023, 1697081, 8381682, 10204352, 11669522]
     """
+    request= twitter.request('friends/ids',{'screen_name':screen_name,'count':5000})
+    response_data = request.json()
+    return response_data['ids']
     ###TODO
     pass
 
 
 def add_all_friends(twitter, users):
+    i=0
+    for u in users:
+       users[i]['friends']= get_friends(twitter,u['screen_name'])
+       i=i+1
+     
     """ Get the list of accounts each user follows.
     I.e., call the get_friends method for all 4 candidates.
 
@@ -166,11 +197,16 @@ def add_all_friends(twitter, users):
 def print_num_friends(users):
     """Print the number of friends per candidate, sorted by candidate name.
     See Log.txt for an example.
+      
     Args:
         users....The list of user dicts.
     Returns:
         Nothing
     """
+
+    for u in users:
+       print(u['screen_name'],len(u['friends']))
+
     ###TODO
     pass
 
@@ -178,17 +214,23 @@ def print_num_friends(users):
 def count_friends(users):
     """ Count how often each friend is followed.
     Args:
-        users: a list of user dicts
+        users: a listof user dicts
     Returns:
         a Counter object mapping each friend to the number of candidates who follow them.
         Counter documentation: https://docs.python.org/dev/library/collections.html#collections.Counter
 
     In this example, friend '2' is followed by three different users.
-    >>> c = count_friends([{'friends': [1,2]}, {'friends': [2,3]}, {'friends': [2,3]}])
+    >>> c = count_friends([{'friends1': [1,2]}, {'friends2': [2,3]}, {'friends3': [2,3]}])
     >>> c.most_common()
     [(2, 3), (3, 2), (1, 1)]
+    
     """
-    ###TODO
+    cnter =Counter()
+    for use in users:
+        for friends in use['friends']:
+            cnter[friends]+=1
+   
+    return cnter  ###TODO
     pass
 
 
@@ -213,7 +255,24 @@ def friend_overlap(users):
     ...     ])
     [('a', 'c', 3), ('a', 'b', 2), ('b', 'c', 2)]
     """
+
+    cnter =Counter()
+    i=1
+    list3=[]
+    total=0
+    for use in users:
+        list1=use['friends']
+       
+        for j in range (i,4):
+            
+            list2=users[j]['friends']
+            totallist=(set(list1).intersection(set(list2)))
+            tuple=[use['screen_name'],users[j]['screen_name'],totallist.__len__()]
+            list3.append(tuple)
+        i=i+1
     ###TODO
+    sorted(list3,  key=lambda x: (x[2], x[0]),reverse = True)
+    return sorted(list3,  key=lambda x: (x[2], x[0]),reverse = True)
     pass
 
 
@@ -231,11 +290,34 @@ def followed_by_hillary_and_donald(users, twitter):
         A string containing the single Twitter screen_name of the user
         that is followed by both Hillary Clinton and Donald Trump.
     """
+
+    list1=users[2]['friends']
+    list2=users[3]['friends']
+    common_friend=(set(list1).intersection(set(list2)))
+    request= twitter.request('users/lookup',{'user_id':common_friend})
+    response_data=request.json()
+    return response_data[0]['name'];
     ###TODO
     pass
 
 
 def create_graph(users, friend_counts):
+    G=nx.Graph()
+   
+    i=1
+    total=0
+    list3=[]
+    for use in users:
+        list1=use['friends']
+        G.add_node(use['screen_name'])
+        for friend in list1:
+            if friend_counts[friend]>1:                
+                G.add_node(friend)
+                G.add_edge(use['screen_name'], friend)
+              
+           
+       
+    
     """ Create a networkx undirected Graph, adding each candidate and friend
         as a node.  Note: while all candidates should be added to the graph,
         only add friends to the graph if they are followed by more than one
@@ -244,17 +326,29 @@ def create_graph(users, friend_counts):
         Each candidate in the Graph will be represented by their screen_name,
         while each friend will be represented by their user id.
 
-    Args:
+     Args:
       users...........The list of user dicts.
       friend_counts...The Counter dict mapping each friend to the number of candidates that follow them.
     Returns:
       A networkx Graph
+  
     """
+    return G
     ###TODO
     pass
 
 
 def draw_network(graph, users, filename):
+    labeldict = {}
+    for use in users:
+        labeldict[use['screen_name']] = use['screen_name']
+    nx.draw(graph,alpha=.7,width=.2,labels=labeldict,with_labels = True,
+                     node_size=45)
+    
+  
+    plt.axis("off")
+    plt.show()
+    plt.savefig(filename)
     """
     Draw the network to a file. Only label the candidate nodes; the friend
     nodes should have no labels (to reduce clutter).
