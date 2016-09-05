@@ -342,13 +342,13 @@ def draw_network(graph, users, filename):
     labeldict = {}
     for use in users:
         labeldict[use['screen_name']] = use['screen_name']
+    plt.figure(figsize=(12,12))
     nx.draw(graph,alpha=.7,width=.2,labels=labeldict,with_labels = True,
                      node_size=45)
-    
-  
+      
     plt.axis("off")
-    plt.show()
     plt.savefig(filename)
+    plt.show()
     """
     Draw the network to a file. Only label the candidate nodes; the friend
     nodes should have no labels (to reduce clutter).
