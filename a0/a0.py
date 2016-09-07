@@ -40,10 +40,11 @@ import configparser
 from TwitterAPI import TwitterAPI
 
 
-consumer_key = ''
-consumer_secret = ''
-access_token = ''
-access_token_secret = ''
+consumer_key = 'BB5Ze129wF8voy9UzQ8ipzCS8'
+consumer_secret = 'BZUq9z7n4pyvjBVvdg9wHWNHZ9b2VTLWNgTvP3DrgJDS5D24iU'
+access_token = '1369262468-0tdd8G1DBN22ivUDCMJNKbVUXjNxmlpaCQ5PyCv'
+access_token_secret='AdiHB3g9IqEynclYq2of1gAxHB73H8bSblrnTWqlf5gV3'
+
 
 
 # This method is done for you. Make sure to put your credentials in the file twitter.cfg.
@@ -51,14 +52,8 @@ def get_twitter():
     """ Construct an instance of TwitterAPI using the tokens you entered above.
     Returns:
       An instance of TwitterAPI.
-    ""
-    TwitterAPI=Twitter(
-        auth=OAuth(access_token, access_token_secret, consumer_key,consumer_secret )
-        )"""
-    config = configparser.ConfigParser()
-    config.read("twitter.cfg")
-    twitterapi = TwitterAPI( config.get('twitter', 'consumer_key'),  config.get('twitter', 'consumer_secret'), 
-                          config.get('twitter', 'access_token'),  config.get('twitter', 'access_token_secret')) 
+    """
+    twitterapi = TwitterAPI( consumer_key,  consumer_secret, access_token,access_token_secret)
 
     return twitterapi;
 
@@ -163,16 +158,14 @@ def get_friends(twitter, screen_name):
     params={'screen_name':screen_name,'count':5000}
     request= robust_request(twitter,'friends/ids',params)
     response_data = request.json()
-    return response_data['ids']
+    list=response_data['ids']
+    return sorted(list)
     ###TODO
     pass
 
 
 def add_all_friends(twitter, users):
-    i=0
-    for u in users:
-       users[i]['friends']= get_friends(twitter,u['screen_name'])
-       i=i+1
+   
      
     """ Get the list of accounts each user follows.
     I.e., call the get_friends method for all 4 candidates.
@@ -191,6 +184,10 @@ def add_all_friends(twitter, users):
     >>> users[0]['friends'][:5]
     [695023, 1697081, 8381682, 10204352, 11669522]
     """
+    i=0
+    for u in users:
+       users[i]['friends']= get_friends(twitter,u['screen_name'])
+       i=i+1
     ###TODO
     pass
 
@@ -221,7 +218,7 @@ def count_friends(users):
         Counter documentation: https://docs.python.org/dev/library/collections.html#collections.Counter
 
     In this example, friend '2' is followed by three different users.
-    >>> c = count_friends([{'friends1': [1,2]}, {'friends2': [2,3]}, {'friends3': [2,3]}])
+    >>> c = count_friends([{'friends': [1,2]}, {'friends': [2,3]}, {'friends': [2,3]}])
     >>> c.most_common()
     [(2, 3), (3, 2), (1, 1)]
     
@@ -263,17 +260,18 @@ def friend_overlap(users):
     total=0
     for use in users:
         list1=use['friends']
-       
-        for j in range (i,4):
-            
-            list2=users[j]['friends']
-            totallist=(set(list1).intersection(set(list2)))
-            tuple=[use['screen_name'],users[j]['screen_name'],totallist.__len__()]
-            list3.append(tuple)
+        j=1
+        for user in users:
+            if(j>i):
+                list2=user['friends']
+                totallist=(set(list1).intersection(set(list2)))
+                tuple=(use['screen_name'],user['screen_name'],totallist.__len__())
+                list3.append(tuple)
+            j=j+1
         i=i+1
     ###TODO
-    sorted(list3,  key=lambda x: (x[2], x[0]),reverse = True)
-    return sorted(list3,  key=lambda x: (x[2], x[0]),reverse = True)
+    list3=sorted(list3,  key=lambda x: ( x[0],x[1]))
+    return sorted(list3,  key=lambda x: (x[2]),reverse = True)
     pass
 
 
@@ -298,26 +296,13 @@ def followed_by_hillary_and_donald(users, twitter):
     params={'user_id':common_friend}
     request= robust_request(twitter,'users/lookup',params)
     response_data=request.json()
-    return response_data[0]['name'];
+    return response_data[0]['screen_name'];
     ###TODO
     pass
 
 
 def create_graph(users, friend_counts):
-    G=nx.Graph()
-   
-    i=1
-    total=0
-    list3=[]
-    for use in users:
-        list1=use['friends']
-        G.add_node(use['screen_name'])
-        for friend in list1:
-            if friend_counts[friend]>1:                
-                G.add_node(friend)
-                G.add_edge(use['screen_name'], friend)
-              
-           
+                   
        
     
     """ Create a networkx undirected Graph, adding each candidate and friend
@@ -335,12 +320,34 @@ def create_graph(users, friend_counts):
       A networkx Graph
   
     """
+    G=nx.Graph()
+   
+    i=1
+    total=0
+    list3=[]
+    for use in users:
+        list1=use['friends']
+        G.add_node(use['screen_name'])
+        for friend in list1:
+            if friend_counts[friend]>1:                
+                G.add_node(friend)
+                G.add_edge(use['screen_name'], friend)
     return G
     ###TODO
     pass
 
 
 def draw_network(graph, users, filename):
+
+    """
+    Draw the network to a file. Only label the candidate nodes; the friend
+    nodes should have no labels (to reduce clutter).
+
+    Methods you'll need include networkx.draw_networkx, plt.figure, and plt.savefig.
+
+    Your figure does not have to look exactly the same as mine, but try to
+    make it look presentable.
+    """
     labeldict = {}
     for use in users:
         labeldict[use['screen_name']] = use['screen_name']
@@ -352,15 +359,6 @@ def draw_network(graph, users, filename):
     
     plt.savefig(filename)
     plt.show()
-    """
-    Draw the network to a file. Only label the candidate nodes; the friend
-    nodes should have no labels (to reduce clutter).
-
-    Methods you'll need include networkx.draw_networkx, plt.figure, and plt.savefig.
-
-    Your figure does not have to look exactly the same as mine, but try to
-    make it look presentable.
-    """
     ###TODO
     pass
 
