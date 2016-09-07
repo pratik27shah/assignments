@@ -131,8 +131,8 @@ def get_users(twitter, screen_names):
     >>> [u['id'] for u in users]
     [6253282, 783214]
     """
-  
-    request= twitter.request('users/lookup',{'screen_name':screen_names})
+    params={'screen_name':screen_names}
+    request= robust_request(twitter,'users/lookup',params)
     dicts=request
     ###TODO
     return dicts
@@ -160,7 +160,8 @@ def get_friends(twitter, screen_name):
     >>> get_friends(twitter, 'aronwc')[:5]
     [695023, 1697081, 8381682, 10204352, 11669522]
     """
-    request= twitter.request('friends/ids',{'screen_name':screen_name,'count':5000})
+    params={'screen_name':screen_name,'count':5000}
+    request= robust_request(twitter,'friends/ids',params)
     response_data = request.json()
     return response_data['ids']
     ###TODO
@@ -294,7 +295,8 @@ def followed_by_hillary_and_donald(users, twitter):
     list1=users[2]['friends']
     list2=users[3]['friends']
     common_friend=(set(list1).intersection(set(list2)))
-    request= twitter.request('users/lookup',{'user_id':common_friend})
+    params={'user_id':common_friend}
+    request= robust_request(twitter,'users/lookup',params)
     response_data=request.json()
     return response_data[0]['name'];
     ###TODO
@@ -343,10 +345,11 @@ def draw_network(graph, users, filename):
     for use in users:
         labeldict[use['screen_name']] = use['screen_name']
     plt.figure(figsize=(12,12))
-    nx.draw(graph,alpha=.7,width=.2,labels=labeldict,with_labels = True,
+    nx.draw_networkx(graph,alpha=.4,width=.2,labels=labeldict,with_labels = True,
                      node_size=45)
       
     plt.axis("off")
+    
     plt.savefig(filename)
     plt.show()
     """
