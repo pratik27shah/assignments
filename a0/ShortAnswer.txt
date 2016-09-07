@@ -9,10 +9,18 @@ Trump.
 
 How is this approach misleading? How might you fix it?
 
+Jill Stein and Gary Johnson, have more number of friends than Hillary Clinton and Donald Trump, 
+so they have more common friends. Whereas for Hillary Clinton and Donald Trump, 
+they have less number of friends so they  less common friends. 
+This approach is misleading as we are not considering the total number of friends of each candidate
+is not considered.
+This can be solved using:
 
+Jaccard Index:
+The Jaccard index, also known as the Jaccard similarity coefficient (originally coined coefficient de communauté by Paul Jaccard),
+ is a statistic used for comparing the similarity and diversity of sample sets
 
-
-
+    J ( A , B ) = | A ∩ B | / | A ∪ B | 
 
 
 
@@ -70,3 +78,4 @@ https://dev.twitter.com/rest/reference/get/friends/ids, how many requests will
 we have to make? Given how Twitter does rate limiting
 (https://dev.twitter.com/rest/public/rate-limiting), approximately how many
 minutes will it take to collect this data?
+Friends on donald trump:42
