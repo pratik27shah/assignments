@@ -17,7 +17,7 @@ is not considered.
 This can be solved using:
 
 Jaccard Index:
-The Jaccard index, also known as the Jaccard similarity coefficient (originally coined coefficient de communauté by Paul Jaccard),
+The Jaccard index, also known as the Jaccard similarity coefficient,
  is a statistic used for comparing the similarity and diversity of sample sets
 
     J ( A , B ) = | A ∩ B | / | A ∪ B | 
@@ -78,4 +78,12 @@ https://dev.twitter.com/rest/reference/get/friends/ids, how many requests will
 we have to make? Given how Twitter does rate limiting
 (https://dev.twitter.com/rest/public/rate-limiting), approximately how many
 minutes will it take to collect this data?
-Friends on donald trump:42
+The no of request takes 15 request in a window of 15 mins,and once limit is exceded.
+The window remains closed for 15 mins before opening again.
+
+Donald trump:Friends 42,Time to get all friends:30 mins
+DrJillStein 4159,Time to get all friends:50 hours
+GovGaryJohnson 3124,Time to get all friends:38 hours
+HillaryClinton 748,Time to get all friends:8 hours
+
+Time to call the friends of all the 4 users:96.5 hours
