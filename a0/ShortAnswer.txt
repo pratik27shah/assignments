@@ -82,8 +82,8 @@ The no of request takes 15 request in a window of 15 mins,and once limit is exce
 The window remains closed for 15 mins before opening again.
 
 Donald trump:Friends 42,Time to get all friends:30 mins
-DrJillStein 4159,Time to get all friends:50 hours
-GovGaryJohnson 3124,Time to get all friends:38 hours
-HillaryClinton 748,Time to get all friends:8 hours
+DrJillStein 4159,Time to get all friends:69.25 hours
+GovGaryJohnson 3124,Time to get all friends:51.81 hours
+HillaryClinton 748,Time to get all friends:12.21 hours
 
-Time to call the friends of all the 4 users:96.5 hours
+Time to call the friends of all the 4 users:133.77 hours
